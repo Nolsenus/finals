@@ -1,0 +1,65 @@
+7. CREATE DATABASE Друзья_человека;
+8.  create table animal_types (
+        id int unsigned not null auto_increment primary key,
+        title varchar(50) not null
+    );
+
+    insert into animal_types(title) values ("Домашние животные"), ("Вьючные животные");
+
+    create table animal_species (
+        id int unsigned not null auto_increment primary key,
+        title varchar(50) not null,
+        animal_type_id int unsigned not null,
+        foreign key (animal_type_id) references animal_types(id) on delete cascade on update cascade
+    );
+  
+    insert into animal_species (title, animal_type_id) values
+        ("Собаки", 1),
+        ("Кошки", 1),
+        ("Хомяки", 1),
+        ("Лошади", 2),
+        ("Верблюды", 2),
+        ("Ослы", 2);
+  
+    create table animals (
+        id int unsigned not null auto_increment primary key,
+        species_id int unsigned not null,
+        name varchar(50) not null,
+        commands varchar(100) default "никакие",
+        birthdate date not null,
+        foreign key (species_id) references animal_species(id) on delete cascade on update cascade
+    );
+9.  insert into animals(species_id, name, commands, birthdate) values
+        (1, "Шарик", "фас", "2020-12-12"),
+        (2, "Матроскин", "голос", "2022-10-23"),
+        (3, "Элвин", "нале-во", "2023-01-04"),
+        (4, "Ума", "медленнее/быстрее", "2017-05-14"),
+        (5, "Глеб", "лежать", "2016-11-22"),
+        (6, "Иа", "никакие", "2020-12-14");
+10.  delete from animal_species where title = "Верблюды";
+11. create table молодые_животные (
+        id int unsigned not null auto_increment primary key,
+        animal_id int unsigned not null,
+        age int unsigned not null,
+        foreign key (animal_id) references animals(id) on delete cascade on update cascade
+    );
+    
+    insert into молодые_животные(animal_id, age)
+        select id, timestampdiff(month, birthdate, curdate()) 
+        from animals 
+        where timestampdiff(year, birthdate, curdate()) >= 1 and 
+            timestampdiff(year, birthdate, curdate()) < 3;
+12. create table alldata (
+        id int unsigned not null auto_increment primary key,
+        animal_type varchar(50) not null,
+        animal_species varchar(50) not null,
+        name varchar(50) not null,
+        commands varchar(100) default "",
+        birthdate date not null
+    );
+
+    insert into alldata (animal_type, animal_species, name, commands, birthdate)
+        select a_t.title, a_s.title, name, commands, birthdate 
+            from animal_types as a_t join 
+                (animal_species as a_s join animals as a on a_s.id = a.species_id) 
+                on a_t.id = a_s.animal_type_id;
